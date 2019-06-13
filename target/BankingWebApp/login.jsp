@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
+<%@ page include="com.web.enums.*" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,6 +8,7 @@
 <title>Banking Application</title>
 </head>
 <body>
+<% request.setAttribute("purpose", com.web.enums.Purpose.LOGIN); %>
 <h2>Login</h2>
 <form action="LoginServlet" method="post">
 	<p>Username: <input type="text" name="username"></p>
