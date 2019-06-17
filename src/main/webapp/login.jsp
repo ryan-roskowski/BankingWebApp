@@ -9,11 +9,11 @@
 </head>
 <body>
 <h2>Login</h2>
-<form action="LoginServlet" method="post">
+<form action="FrontController" method="post">
 	<p>Username: <input type="text" name="username" style="margin-left: 5px;"></p>
 	<p>Password: <input type="text" name="password" style="margin-left: 5px;"></p>
 	<input type="hidden" name="purpose" value="login">
-	<p><input type="submit">
+	<p><input type="submit" value="submit">
 </form>
 </body>
 </html>

@@ -22,7 +22,9 @@ import com.bank.dao.impl.EmployeeDaoImpl;
 import com.bank.dao.impl.UserDaoImpl;
 import com.bank.dao.impl.AccountDaoImpl;
 import com.bank.data.Database;
+import com.bank.enums.DepositResult;
 import com.bank.enums.UserAction;
+import com.bank.enums.WithdrawResult;
 import com.bank.services.impl.AccountServiceImpl;
 import com.bank.services.impl.EmployeeServiceImpl;
 import com.bank.services.impl.UserServiceImpl;
@@ -33,7 +35,7 @@ import com.web.enums.Purpose;
 /**
  * Servlet implementation class FrontController
  */
-public class LoginServlet extends HttpServlet {
+public class FrontController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private Database data;
 	private Properties properties;
@@ -50,7 +52,7 @@ public class LoginServlet extends HttpServlet {
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public LoginServlet() {
+    public FrontController() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -75,14 +77,6 @@ public class LoginServlet extends HttpServlet {
     		this.accountController = new AccountController(accountDao);
     		data.generateDefaultData();
     		
-    		// share these objects with the other servlets
-    		config.getServletContext().setAttribute("data", data);
-    		config.getServletContext().setAttribute("properties", properties);
-    		config.getServletContext().setAttribute("userDao", userDao);
-    		config.getServletContext().setAttribute("customerDao", customerDao);
-    		config.getServletContext().setAttribute("employeeDao", employeeDao);
-    		config.getServletContext().setAttribute("userService", userService);
-    		config.getServletContext().setAttribute("loginController", loginController);
     	} catch(Exception e) {
     		System.out.println("Exception caught");
     		e.printStackTrace();
@@ -167,6 +161,23 @@ public class LoginServlet extends HttpServlet {
 					request.getRequestDispatcher("newCustomer.jsp").forward(request, response);
 					return;
 				case DEPOSIT:
+					try {
+						Customer customer = (Customer) user;
+						customer.setAccounts(accountController.getAccounts(customer));
+						if(customer.getAccounts().isEmpty()) {
+							request.setAttribute("message", "This user has no accounts, please have an employee add an account.");
+							request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+							return;
+						}
+						else {
+							request.setAttribute("accountList", customer.getAccounts());
+							request.getRequestDispatcher("depositAccountSelect.jsp").forward(request, response);
+							return;
+						}
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					return;
 				case INVALID:
 					session.invalidate();
@@ -193,13 +204,55 @@ public class LoginServlet extends HttpServlet {
 					request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
 					return;
 				case VIEW_BALANCE:
+					try {
+						Customer customer = (Customer) user;
+						customer.setAccounts(accountController.getAccounts(customer));
+						if(customer.getAccounts().isEmpty()) {
+							request.setAttribute("message", "This user has no accounts, please have an employee add an account.");
+							request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+							return;
+						}
+						else {
+							request.setAttribute("accountList", customer.getAccounts());
+							request.getRequestDispatcher("viewBalanceAccountSelect.jsp").forward(request, response);
+							return;
+							
+						}
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					return;
 				case WITHDRAW:
+					try {
+						Customer customer = (Customer) user;
+						customer.setAccounts(accountController.getAccounts(customer));
+						if(customer.getAccounts().isEmpty()) {
+							request.setAttribute("message", "This user has no accounts, please have an employee add an account.");
+							request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+							return;
+						}
+						else {
+							request.setAttribute("accountList", customer.getAccounts());
+							request.getRequestDispatcher("withdrawAccountSelect.jsp").forward(request, response);
+							return;
+						}
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					return;
 				default:
 					return;
 				}
 			case "newCustomer":
+				if(request.getParameter("username").equals("") || request.getParameter("password").equals("") || request.getParameter("fname").equals("")
+				|| request.getParameter("lname").equals("") || request.getParameter("address").equals("") || request.getParameter("phone").equals("")){
+					request.setAttribute("message", "Incomplete input given.");
+					request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+					return;
+				}
+						
 				try {
 					employeeService.createCustomerUser(request.getParameter("username"), request.getParameter("password"), request.getParameter("fname"),
 							request.getParameter("lname"), request.getParameter("address"), request.getParameter("phone"));
@@ -214,6 +267,11 @@ public class LoginServlet extends HttpServlet {
 					return;
 				}
 			case "newAccount":
+				if(request.getParameter("username").equals("")) {
+					request.setAttribute("message", "Incomplete input given.");
+					request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+					return;
+				}
 				try {
 					User accUser = userDao.getUser(request.getParameter("username"));
 					if(accUser == null) {
@@ -239,7 +297,92 @@ public class LoginServlet extends HttpServlet {
 					e.printStackTrace();
 					request.getRequestDispatcher("error.jsp").forward(request, response);
 				}
-				break;
+				return;
+			case "viewBalance":
+				try {
+					user = (User)request.getSession().getAttribute("user");
+					Customer customer = (Customer) user;
+					customer.setAccounts(accountController.getAccounts(customer));
+					if(customer.getAccounts().isEmpty()) {
+						request.setAttribute("message", "This user has no accounts, please have an employee add an account.");
+						request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+						return;
+					}
+					else {
+						System.out.println("Account Select" + request.getParameter("account"));
+						request.setAttribute("message", "Balance: $"+customer.getAccounts().get(Integer.parseInt(request.getParameter("account"))).getBalance());
+						request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+						return;
+					}
+				}
+				catch(Exception e) {
+					request.getRequestDispatcher("error.jsp").forward(request, response);
+				}
+				
+				return;
+			case "withdraw":
+				try {
+					user = (User)request.getSession().getAttribute("user");
+					Customer customer = (Customer) user;
+					customer.setAccounts(accountController.getAccounts(customer));
+					if(customer.getAccounts().isEmpty()) {
+						request.setAttribute("message", "This user has no accounts, please have an employee add an account.");
+						request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+						return;
+					}
+					else {
+						long prevBalance = customer.getAccounts().get(Integer.parseInt( (String) request.getParameter("account"))).getBalance();
+						WithdrawResult res = accountService.withdraw(customer.getAccounts().get(Integer.parseInt( (String) request.getParameter("account"))), (Integer.parseInt( (String) request.getParameter("amount"))));
+						if(res == WithdrawResult.SUCCESS) {
+							request.setAttribute("message", "Previous balance: $"+prevBalance+"\nNew Balance: $"+customer.getAccounts().get(Integer.parseInt( (String) request.getParameter("account"))).getBalance());
+							request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+							return;
+						}
+						else if(res == WithdrawResult.FAILURE)  {
+							request.setAttribute("message", "Withdraw failed.");
+							request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+							return;
+						}
+						else if(res == WithdrawResult.OVERDRAFT) {
+							request.setAttribute("message", "Error, withdraw results in negative balance.");
+							request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+							return;
+						}
+					}
+				}
+				catch(Exception e) {
+					request.getRequestDispatcher("error.jsp").forward(request, response);
+				}
+				return;
+				
+			case "deposit":
+				try {
+					user = (User)request.getSession().getAttribute("user");
+					Customer customer = (Customer) user;
+					customer.setAccounts(accountController.getAccounts(customer));
+					if(customer.getAccounts().isEmpty()) {
+						request.setAttribute("message", "This user has no accounts, please have an employee add an account.");
+						request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+						return;
+					}
+					else {
+						long prevBalance = customer.getAccounts().get(Integer.parseInt( (String) request.getParameter("account"))).getBalance();
+						DepositResult res = accountService.deposit(customer.getAccounts().get(Integer.parseInt( (String) request.getParameter("account"))), (Integer.parseInt( (String) request.getParameter("amount"))));
+						if(res == DepositResult.SUCCESS) {
+							request.setAttribute("message", "Previous balance: $"+prevBalance+"\nNew Balance: $"+customer.getAccounts().get(Integer.parseInt( (String) request.getParameter("account"))).getBalance());
+							request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+							return;
+						}
+						else {
+							request.setAttribute("message", "Deposit failed.");
+							request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+						}
+					}
+				}
+				catch(Exception e) {
+					request.getRequestDispatcher("error.jsp").forward(request, response);
+				}
+				return;
 			}
 		}
 	}

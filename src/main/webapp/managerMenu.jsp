@@ -8,7 +8,7 @@
 </head>
 <body>
 	<h2>Please select a menu item below:</h2>
-	<form action="LoginServlet" method="post">
+	<form action="FrontController" method="post">
 	  <input type="radio" name="menu" value="1" checked>Create Customer With Login<br>
 	  <input type="radio" name="menu" value="2"> Create Account For Customer<br>
 	  <input type="radio" name="menu" value="3"> Manager Option 1 <br>

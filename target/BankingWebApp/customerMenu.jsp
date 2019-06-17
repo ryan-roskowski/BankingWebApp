@@ -8,11 +8,12 @@
 </head>
 <body>
 	<h2>Please select a menu item below:</h2>
-	<form action="ActionServlet" method="post">
+	<form action="FrontController" method="post">
 	  <input type="radio" name="menu" value="1" checked>View_Balance<br>
 	  <input type="radio" name="menu" value="2"> Deposit<br>
 	  <input type="radio" name="menu" value="3"> Withdraw<br>
 	  <input type="radio" name="menu" value="4"> Logout<br>
+	  <input type="hidden" name="purpose" value="action">
 	  <input type="submit" value="submit">
 	</form>
 </body>
