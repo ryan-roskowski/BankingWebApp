@@ -3,6 +3,7 @@
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -14,11 +15,13 @@ import javax.servlet.http.HttpSession;
 import com.bank.beans.Customer;
 import com.bank.beans.Employee;
 import com.bank.beans.Properties;
+import com.bank.beans.Transaction;
 import com.bank.beans.User;
 import com.bank.controller.AccountController;
 import com.bank.controller.LoginController;
 import com.bank.dao.impl.CustomerDaoImpl;
 import com.bank.dao.impl.EmployeeDaoImpl;
+import com.bank.dao.impl.TransactionDaoImpl;
 import com.bank.dao.impl.UserDaoImpl;
 import com.bank.dao.impl.AccountDaoImpl;
 import com.bank.data.Database;
@@ -42,6 +45,7 @@ public class FrontController extends HttpServlet {
 	private UserDaoImpl userDao;
 	private CustomerDaoImpl customerDao;
 	private EmployeeDaoImpl employeeDao;
+	private TransactionDaoImpl transactionDao;
 	private UserServiceImpl userService;
 	private EmployeeServiceImpl employeeService;
 	private LoginController loginController;
@@ -70,11 +74,12 @@ public class FrontController extends HttpServlet {
     		this.customerDao = new CustomerDaoImpl(properties, data);
     		this.employeeDao = new EmployeeDaoImpl(properties, data);
     		this.accountDao = new AccountDaoImpl(properties, data);
+    		this.transactionDao = new TransactionDaoImpl(properties, data);
     		this.userService = new UserServiceImpl();
     		this.employeeService = new EmployeeServiceImpl(userDao, customerDao);
     		this.loginController = new LoginController(userDao, employeeDao, customerDao);
-    		this.accountService = new AccountServiceImpl(accountDao);
-    		this.accountController = new AccountController(accountDao);
+    		this.accountService = new AccountServiceImpl(accountDao, transactionDao);
+    		this.accountController = new AccountController(accountDao, transactionDao);
     		data.generateDefaultData();
     		
     	} catch(Exception e) {
@@ -242,6 +247,24 @@ public class FrontController extends HttpServlet {
 						e1.printStackTrace();
 					}
 					return;
+				case VIEW_TRANSACTIONS:
+					try {
+						Customer customer = (Customer) user;
+						customer.setAccounts(accountController.getAccounts(customer));
+						if(customer.getAccounts().isEmpty()) {
+							request.setAttribute("message", "This user has no accounts, please have an employee add an account.");
+							request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+							return;
+						}
+						else {
+							request.setAttribute("accountList", customer.getAccounts());
+							request.getRequestDispatcher("statementAccountSelect.jsp").forward(request, response);
+						}
+					}
+					catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				default:
 					return;
 				}
@@ -383,6 +406,27 @@ public class FrontController extends HttpServlet {
 					request.getRequestDispatcher("error.jsp").forward(request, response);
 				}
 				return;
+			case "viewStatement":
+				try {
+					user = (User)request.getSession().getAttribute("user");
+					Customer customer = (Customer) user;
+					customer.setAccounts(accountController.getAccounts(customer));
+					if(customer.getAccounts().isEmpty()) {
+						request.setAttribute("message", "This user has no accounts, please have an employee add an account.");
+						request.getRequestDispatcher("messageContainer.jsp").forward(request, response);
+						return;
+					}
+					else {
+						ArrayList<Transaction> transactionList = transactionDao.getTransactions(customer, customer.getAccounts().get(Integer.parseInt( (String) request.getParameter("account"))));
+						request.setAttribute("transactionList", transactionList);
+						request.setAttribute("name", customer.getFirstName()+" "+customer.getLastName());
+						request.setAttribute("accountNumber", customer.getAccounts().get(Integer.parseInt( (String) request.getParameter("account"))).getAccountNumber());
+						request.getRequestDispatcher("transactionList.jsp").forward(request, response);
+					}
+				}
+				catch(Exception e) {
+					request.getRequestDispatcher("error.jsp").forward(request, response);
+				}
 			}
 		}
 	}

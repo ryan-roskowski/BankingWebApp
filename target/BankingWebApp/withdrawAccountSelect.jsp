@@ -13,10 +13,16 @@
 <form action=FrontController>
 <% 
 	ArrayList<Account> accountList = (ArrayList<Account>)request.getAttribute("accountList");
-for(int i = 0; i < accountList.size(); i+=1) { %>
-            <input type="radio" name="account" value=<%= i %>> <%= accountList.get(i).getType() %>
-    
+for(int i = 0; i < accountList.size(); i+=1) { 
+       	if(i == 0){%>
+            <input type="radio" name="account" value="<%=Integer.toString(i)%>" checked="checked"> <%= accountList.get(i).getType() %>
+     <% } 
+     else {%>
+           <input type="radio" name="account" value="<%=Integer.toString(i)%>" > <%= accountList.get(i).getType() %>
+         <% }%>
+    <br>
     <% } %>
+    
     
     <br>Withdraw Amount: <input type="text" name="amount">
     <input type="hidden" name="purpose" value="withdraw">

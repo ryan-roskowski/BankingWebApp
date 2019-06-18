@@ -14,10 +14,13 @@
 <% 
 	ArrayList<Account> accountList = (ArrayList<Account>)request.getAttribute("accountList");
 for(int i = 0; i < accountList.size(); i+=1) { 
-		System.out.println(i);%>
-            <input type="radio" name="account" value="<%=Integer.toString(i)%>"> <%= accountList.get(i).getType() %>
-         <% System.out.println(Integer.toString(i));%>
-    
+		if(i == 0){%>
+            <input type="radio" name="account" value="<%=Integer.toString(i)%>" checked="checked"> <%= accountList.get(i).getType() %>
+     <% } 
+     else {%>
+           <input type="radio" name="account" value="<%=Integer.toString(i)%>" > <%= accountList.get(i).getType() %>
+         <% }%>
+    <br>
     <% } %>
     
     <input type="hidden" name="purpose" value="viewBalance">

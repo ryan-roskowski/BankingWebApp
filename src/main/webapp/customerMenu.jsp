@@ -12,7 +12,8 @@
 	  <input type="radio" name="menu" value="1" checked>View_Balance<br>
 	  <input type="radio" name="menu" value="2"> Deposit<br>
 	  <input type="radio" name="menu" value="3"> Withdraw<br>
-	  <input type="radio" name="menu" value="4"> Logout<br>
+	  <input type="radio" name="menu" value="4"> View Statement<br>
+	  <input type="radio" name="menu" value="5"> Logout<br>
 	  <input type="hidden" name="purpose" value="action">
 	  <input type="submit" value="submit">
 	</form>

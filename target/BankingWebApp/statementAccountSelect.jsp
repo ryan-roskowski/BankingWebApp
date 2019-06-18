@@ -10,11 +10,11 @@
 </head>
 <body>
 <h2>Please select an account below.</h2>
-<form action="FrontController">
+<form action="FrontController" method="post">
 <% 
 	ArrayList<Account> accountList = (ArrayList<Account>)request.getAttribute("accountList");
 for(int i = 0; i < accountList.size(); i+=1) { 
-      	if(i == 0){%>
+		if(i == 0){%>
             <input type="radio" name="account" value="<%=Integer.toString(i)%>" checked="checked"> <%= accountList.get(i).getType() %>
      <% } 
      else {%>
@@ -23,9 +23,7 @@ for(int i = 0; i < accountList.size(); i+=1) {
     <br>
     <% } %>
     
-    
-    <br>Deposit Amount: <input type="text" name="amount">
-    <input type="hidden" name="purpose" value="deposit">
+    <input type="hidden" name="purpose" value="viewStatement">
     <br>
     <input type="submit" value="submit">
 
